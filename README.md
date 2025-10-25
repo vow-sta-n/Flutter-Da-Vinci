@@ -226,7 +226,7 @@ MIT License - Feel free to use in your projects!
 
 Created with ❤️ for the Flutter and Figma communities by Novatuirents
 
-Check our website: [Novaturients](novaturients.in)
+Check our website: [Novaturients](https://novaturients.in)
 
 ---
 

@@ -13,21 +13,25 @@ Da Vinci is a powerful Figma plugin that converts your vector designs into produ
 ## 🚀 Features
 
 ### 🎯 Smart Vector Conversion
+
 - **Native Vector Support** - Works with all Figma vector shapes (stars, polygons, rectangles, etc.)
 - **Auto-Flatten** - Automatically flattens complex designs (groups, boolean operations, components) without modifying your canvas
 - **Multi-Path Support** - Handles complex shapes with multiple vector paths
 
 ### 📱 Responsive by Default
+
 - **Automatic Scaling** - Generated code scales beautifully to any screen size
 - **Aspect Ratio Preservation** - Maintains original design proportions
 - **Responsive Strokes** - Stroke widths scale proportionally
 
 ### 🎨 Complete Styling
+
 - **Fill Colors** - Extracts and converts fill colors to Flutter Color codes
 - **Stroke Support** - Includes stroke colors and widths
 - **Multiple Paths** - Handles complex shapes with multiple vector paths
 
 ### 💻 Developer Friendly
+
 - **Clean Code Generation** - Produces readable, well-structured Flutter code
 - **Copy to Clipboard** - One-click copy for instant use
 - **Usage Examples** - Includes code snippets showing how to use the generated painter
@@ -36,6 +40,7 @@ Da Vinci is a powerful Figma plugin that converts your vector designs into produ
 ## 📦 Installation
 
 ### Prerequisites
+
 1. **Node.js & NPM** - [Download here](https://nodejs.org/en/download/)
 2. **TypeScript** - Install globally:
    ```bash
@@ -43,6 +48,7 @@ Da Vinci is a powerful Figma plugin that converts your vector designs into produ
    ```
 
 ### Setup
+
 1. Clone or download this plugin
 2. Navigate to the plugin directory
 3. Install dependencies:
@@ -53,12 +59,14 @@ Da Vinci is a powerful Figma plugin that converts your vector designs into produ
 ### Running the Plugin
 
 #### Option 1: Visual Studio Code (Recommended)
+
 1. Open this directory in VS Code
 2. Run `Terminal > Run Build Task...`
 3. Select `npm: watch`
 4. VS Code will automatically compile TypeScript on save
 
 #### Option 2: Command Line
+
 ```bash
 # Watch mode (auto-compile on changes)
 tsc --watch
@@ -68,6 +76,7 @@ tsc
 ```
 
 ### Load in Figma
+
 1. Open Figma Desktop App
 2. Go to `Plugins > Development > Import plugin from manifest...`
 3. Select the `manifest.json` file from this directory
@@ -76,6 +85,7 @@ tsc
 ## 🎯 How to Use
 
 ### Basic Usage
+
 1. **Select** any vector element in Figma
 2. **Run** the Da Vinci plugin
 3. **Copy** the generated Flutter code
@@ -84,6 +94,7 @@ tsc
 ### Supported Elements
 
 #### ✅ Direct Support (No Flatten Needed)
+
 - Vector shapes
 - Stars
 - Polygons
@@ -93,6 +104,7 @@ tsc
 - Text (as outlines)
 
 #### ✅ Auto-Flatten Support
+
 - Frames with multiple layers
 - Groups
 - Boolean operations (Union, Subtract, Intersect, Exclude)
@@ -100,6 +112,7 @@ tsc
 - Complex nested designs
 
 #### ❌ Not Supported
+
 - Slices
 - Sections
 - Empty elements
@@ -109,6 +122,7 @@ tsc
 ### Input: A Star Shape in Figma
 
 ### Output: Flutter Code
+
 ```dart
 import 'package:flutter/material.dart';
 
@@ -159,18 +173,21 @@ class StarPainter extends CustomPainter {
 ## 🛠️ Technical Details
 
 ### SVG Path to Flutter Conversion
+
 Da Vinci intelligently converts SVG path commands to Flutter Path API:
 
-| SVG Command | Flutter Method |
-|-------------|----------------|
-| `M x y` | `path.moveTo(x, y)` |
-| `L x y` | `path.lineTo(x, y)` |
-| `C x1 y1 x2 y2 x y` | `path.cubicTo(x1, y1, x2, y2, x, y)` |
-| `Q x1 y1 x y` | `path.quadraticBezierTo(x1, y1, x, y)` |
-| `Z` | `path.close()` |
+| SVG Command         | Flutter Method                         |
+| ------------------- | -------------------------------------- |
+| `M x y`             | `path.moveTo(x, y)`                    |
+| `L x y`             | `path.lineTo(x, y)`                    |
+| `C x1 y1 x2 y2 x y` | `path.cubicTo(x1, y1, x2, y2, x, y)`   |
+| `Q x1 y1 x y`       | `path.quadraticBezierTo(x1, y1, x, y)` |
+| `Z`                 | `path.close()`                         |
 
 ### Flatten Process
+
 When you select a complex element:
+
 1. Plugin clones the selected node
 2. Applies `figma.flatten()` to the clone
 3. Extracts vector paths from the flattened result
@@ -184,6 +201,7 @@ Found a bug or have a feature request? Feel free to open an issue or submit a pu
 ## 📝 Development Notes
 
 ### Project Structure
+
 ```
 da-vinci-plugin/
 ├── manifest.json      # Plugin manifest
@@ -194,6 +212,7 @@ da-vinci-plugin/
 ```
 
 ### Key Functions
+
 - `sendSelectionData()` - Gathers element data and sends to UI
 - `extractVectorPaths()` - Handles flatten and vector extraction
 - `generateFlutterCode()` - Converts paths to Flutter code
@@ -205,10 +224,12 @@ MIT License - Feel free to use in your projects!
 
 ## 🌟 Credits
 
-Created with ❤️ for the Flutter and Figma communities
+Created with ❤️ for the Flutter and Figma communities by Novatuirents
+
+Check our website: _novaturients.in_
 
 ---
 
 **Made with Flutter** 💙 | **Powered by Figma** 🎨
 
-*Transform design into code, beautifully.*
+_Transform design into code, beautifully._

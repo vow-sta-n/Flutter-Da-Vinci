@@ -1,4 +1,4 @@
-# 🎨 Da Vinci Art to Code
+# 🎨Flutter Da Vinci Art to Code
 
 > Transform your Figma designs into beautiful, responsive Flutter code with a single click!
 
@@ -6,7 +6,7 @@
 ![Figma](https://img.shields.io/badge/Figma-Plugin-purple.svg)
 ![Flutter](https://img.shields.io/badge/Flutter-Ready-02569B.svg)
 
-## ✨ What is Da Vinci?
+## ✨ What is Flutter Da Vinci?
 
 Da Vinci is a powerful Figma plugin that converts your vector designs into production-ready Flutter `CustomPainter` code. Whether you're designing icons, illustrations, or custom UI elements, Da Vinci makes it effortless to bring your designs to life in Flutter.
 

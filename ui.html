@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 16px;
+      margin: 0;
+    }
+    
+    h2 {
+      margin: 0 0 16px 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .status {
+      padding: 12px;
+      background: #f0f0f0;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      text-align: center;
+      color: #666;
+    }
+    
+    .section {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin: 0 0 12px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .element-info {
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+    
+    .element-info div {
+      margin: 4px 0;
+      font-size: 13px;
+    }
+    
+    .label {
+      font-weight: 600;
+      color: #555;
+    }
+    
+    .code-container {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 16px;
+      border-radius: 6px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre;
+      line-height: 1.5;
+    }
+    
+    .keyword { color: #569cd6; }
+    .class-name { color: #4ec9b0; }
+    .string { color: #ce9178; }
+    .number { color: #b5cea8; }
+    .comment { color: #6a9955; }
+    .function { color: #dcdcaa; }
+    
+    .warning {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      color: #856404;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    
+    .error {
+      background: #f8d7da;
+      border: 1px solid #dc3545;
+      color: #721c24;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    
+    button:hover {
+      background: #0052a3;
+    }
+    
+    button.secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+    
+    button.secondary:hover {
+      background: #d0d0d0;
+    }
+    
+    button.copy-code {
+      background: #28a745;
+    }
+    
+    button.copy-code:hover {
+      background: #218838;
+    }
+  </style>
+</head>
+<body>
+  <h2>🎨 Da Vinci Art to Code</h2>
+  
+  <div id="status" class="status">
+    Select a vector element on the canvas
+  </div>
+  
+  <div id="content" style="display: none;">
+    <div class="element-info">
+      <div><span class="label">Name:</span> <span id="elementName">-</span></div>
+      <div><span class="label">Type:</span> <span id="elementType">-</span></div>
+      <div><span class="label">Size:</span> <span id="elementSize">-</span></div>
+      <div id="flattenedInfo" style="display: none; color: #0066cc; margin-top: 8px;">
+        ✨ Flattened automatically to extract vector paths
+      </div>
+    </div>
+    
+    <div id="flutterSection" style="display: none;">
+      <div class="section">
+        <div class="section-title">
+          <span>Flutter CustomPainter Code</span>
+        </div>
+        <div id="flutterCodeContainer" class="code-container"></div>
+        <button class="copy-code" onclick="copyFlutterCode()">📋 Copy Flutter Code</button>
+      </div>
+    </div>
+    
+    <div id="noVectorWarning" style="display: none;" class="warning">
+      ⚠️ Unable to extract vector paths from this element.
+    </div>
+    
+    <div id="vectorError" style="display: none;" class="error"></div>
+    
+    <button id="refresh">🔄 Refresh</button>
+  </div>
+  
+  <button id="cancel" class="secondary">Close</button>
+
+  <script>
+    let currentFlutterCode = '';
+    
+    // Listen for messages from the plugin code
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      
+      if (msg.type === 'no-selection') {
+        document.getElementById('status').textContent = '⚠️ No element selected, click on any element to continue!';
+        document.getElementById('status').style.display = 'block';
+        document.getElementById('content').style.display = 'none';
+      } 
+      else if (msg.type === 'multiple-selection') {
+        document.getElementById('status').textContent = `⚠️ ${msg.count} elements selected. Please select only one.`;
+        document.getElementById('status').style.display = 'block';
+        document.getElementById('content').style.display = 'none';
+      }
+      else if (msg.type === 'selection-data') {
+        const data = msg.data;
+        
+        // Hide status, show content
+        document.getElementById('status').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+        
+        // Update element info
+        document.getElementById('elementName').textContent = data.name;
+        document.getElementById('elementType').textContent = data.type;
+        document.getElementById('elementSize').textContent = `${Math.round(data.width)} × ${Math.round(data.height)}`;
+        
+        // Show flatten info if element was flattened
+        const flattenedInfo = document.getElementById('flattenedInfo');
+        if (data.wasFlattened) {
+          flattenedInfo.style.display = 'block';
+        } else {
+          flattenedInfo.style.display = 'none';
+        }
+        
+        // Handle Flutter code generation
+        const flutterSection = document.getElementById('flutterSection');
+        const noVectorWarning = document.getElementById('noVectorWarning');
+        const vectorError = document.getElementById('vectorError');
+        
+        // Reset displays
+        flutterSection.style.display = 'none';
+        noVectorWarning.style.display = 'none';
+        vectorError.style.display = 'none';
+        
+        if (data.flattenError) {
+          // Show error if flatten failed
+          vectorError.textContent = '❌ ' + data.flattenError;
+          vectorError.style.display = 'block';
+        } else if (data.hasVectorPaths && data.vectorPaths.length > 0) {
+          // Successfully got vector paths
+          flutterSection.style.display = 'block';
+          generateFlutterCode(data);
+        } else {
+          // No paths available
+          noVectorWarning.textContent = '⚠️ Unable to extract vector paths from this element.';
+          noVectorWarning.style.display = 'block';
+        }
+      }
+    };
+    
+    function generateFlutterCode(data) {
+      const className = sanitizeClassName(data.name);
+      const width = Math.round(data.width);
+      const height = Math.round(data.height);
+      const fillColor = data.fillColor || '0xFF000000';
+      const strokeColor = data.strokeInfo.color;
+      const strokeWidth = data.strokeInfo.width;
+      
+      let code = `import 'package:flutter/material.dart';\n\n`;
+      code += `class ${className}Painter extends CustomPainter {\n`;
+      code += `  @override\n`;
+      code += `  void paint(Canvas canvas, Size size) {\n`;
+      code += `    // Original design size from Figma\n`;
+      code += `    const originalWidth = ${width}.0;\n`;
+      code += `    const originalHeight = ${height}.0;\n\n`;
+      code += `    // Calculate scale factors to make it responsive\n`;
+      code += `    final scaleX = size.width / originalWidth;\n`;
+      code += `    final scaleY = size.height / originalHeight;\n`;
+      code += `    final scale = scaleX < scaleY ? scaleX : scaleY; // Maintain aspect ratio\n\n`;
+      
+      // Fill paint
+      code += `    final fillPaint = Paint()\n`;
+      code += `      ..color = Color(${fillColor})\n`;
+      code += `      ..style = PaintingStyle.fill;\n\n`;
+      
+      // Stroke paint if exists
+      if (strokeColor && strokeWidth > 0) {
+        code += `    final strokePaint = Paint()\n`;
+        code += `      ..color = Color(${strokeColor})\n`;
+        code += `      ..style = PaintingStyle.stroke\n`;
+        code += `      ..strokeWidth = ${strokeWidth.toFixed(1)} * scale; // Responsive stroke\n\n`;
+      }
+      
+      code += `    // Save canvas state and apply scaling\n`;
+      code += `    canvas.save();\n`;
+      code += `    canvas.scale(scale, scale);\n\n`;
+      
+      // Generate paths
+      data.vectorPaths.forEach((vectorPath, index) => {
+        code += `    final path${index > 0 ? index : ''} = Path();\n`;
+        const pathCommands = parseSvgPath(vectorPath.data);
+        pathCommands.forEach(cmd => {
+          code += `    ${cmd}\n`;
+        });
+        code += `\n`;
+        
+        // Draw the path
+        code += `    canvas.drawPath(path${index > 0 ? index : ''}, fillPaint);\n`;
+        if (strokeColor && strokeWidth > 0) {
+          code += `    canvas.drawPath(path${index > 0 ? index : ''}, strokePaint);\n`;
+        }
+        code += `\n`;
+      });
+      
+      code += `    // Restore canvas state\n`;
+      code += `    canvas.restore();\n`;
+      code += `  }\n\n`;
+      code += `  @override\n`;
+      code += `  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;\n`;
+      code += `}\n\n`;
+      
+      // Usage example
+      code += `// Usage Example:\n`;
+      code += `// CustomPaint(\n`;
+      code += `//   size: Size(200, 200), // Any size - will scale automatically!\n`;
+      code += `//   painter: ${className}Painter(),\n`;
+      code += `// )\n`;
+      code += `//\n`;
+      code += `// Or use with aspect ratio:\n`;
+      code += `// AspectRatio(\n`;
+      code += `//   aspectRatio: ${(width / height).toFixed(2)},\n`;
+      code += `//   child: CustomPaint(painter: ${className}Painter()),\n`;
+      code += `// )`;
+      
+      currentFlutterCode = code;
+      displayFlutterCode(code);
+    }
+    
+    function sanitizeClassName(name) {
+      // Remove special characters and spaces, capitalize first letter
+      let sanitized = name.replace(/[^a-zA-Z0-9]/g, '');
+      if (sanitized.length === 0) sanitized = 'CustomShape';
+      return sanitized.charAt(0).toUpperCase() + sanitized.slice(1);
+    }
+    
+    function parseSvgPath(pathData) {
+      const commands = [];
+      const tokens = pathData.match(/[a-zA-Z][^a-zA-Z]*/g) || [];
+      
+      tokens.forEach(token => {
+        const cmd = token[0];
+        const params = token.slice(1).trim().split(/[\s,]+/).map(Number);
+        
+        switch (cmd.toUpperCase()) {
+          case 'M': // MoveTo
+            commands.push(`path${getCurrentPath()}.moveTo(${params[0].toFixed(2)}, ${params[1].toFixed(2)});`);
+            break;
+          case 'L': // LineTo
+            commands.push(`path${getCurrentPath()}.lineTo(${params[0].toFixed(2)}, ${params[1].toFixed(2)});`);
+            break;
+          case 'H': // Horizontal Line
+            commands.push(`path${getCurrentPath()}.lineTo(${params[0].toFixed(2)}, 0); // Horizontal line`);
+            break;
+          case 'V': // Vertical Line
+            commands.push(`path${getCurrentPath()}.lineTo(0, ${params[0].toFixed(2)}); // Vertical line`);
+            break;
+          case 'C': // Cubic Bezier
+            commands.push(`path${getCurrentPath()}.cubicTo(${params[0].toFixed(2)}, ${params[1].toFixed(2)}, ${params[2].toFixed(2)}, ${params[3].toFixed(2)}, ${params[4].toFixed(2)}, ${params[5].toFixed(2)});`);
+            break;
+          case 'Q': // Quadratic Bezier
+            commands.push(`path${getCurrentPath()}.quadraticBezierTo(${params[0].toFixed(2)}, ${params[1].toFixed(2)}, ${params[2].toFixed(2)}, ${params[3].toFixed(2)});`);
+            break;
+          case 'A': // Arc (simplified - Flutter doesn't have direct arc, so we add a comment)
+            commands.push(`// Arc command - may need manual conversion`);
+            commands.push(`path${getCurrentPath()}.lineTo(${params[5].toFixed(2)}, ${params[6].toFixed(2)});`);
+            break;
+          case 'Z': // Close path
+            commands.push(`path${getCurrentPath()}.close();`);
+            break;
+        }
+      });
+      
+      return commands;
+    }
+    
+    let currentPathIndex = 0;
+    function getCurrentPath() {
+      return currentPathIndex > 0 ? currentPathIndex.toString() : '';
+    }
+    
+    function displayFlutterCode(code) {
+      const container = document.getElementById('flutterCodeContainer');
+      // Simple syntax highlighting
+      const highlighted = code
+        .replace(/\n/g, '<br>')
+        .replace(/  /g, '&nbsp;&nbsp;')
+        .replace(/(import|class|extends|void|final|return|if|else|const|new|bool|double)/g, '<span class="keyword">$1</span>')
+        .replace(/(CustomPainter|Canvas|Size|Paint|Color|Path|PaintingStyle)/g, '<span class="class-name">$1</span>')
+        .replace(/(paint|drawPath|moveTo|lineTo|cubicTo|quadraticBezierTo|close)/g, '<span class="function">$1</span>')
+        .replace(/('.*?')/g, '<span class="string">$1</span>')
+        .replace(/(\d+\.?\d*)/g, '<span class="number">$1</span>')
+        .replace(/(\/\/.*?)(<br>|$)/g, '<span class="comment">$1</span>$2');
+      
+      container.innerHTML = highlighted;
+    }
+    
+    function copyFlutterCode() {
+      const textarea = document.createElement('textarea');
+      textarea.value = currentFlutterCode;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      
+      try {
+        document.execCommand('copy');
+        parent.postMessage({ pluginMessage: { type: 'copy-code' } }, '*');
+        
+        // Visual feedback
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = '✓ Copied!';
+        setTimeout(() => {
+          button.textContent = originalText;
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
+      
+      document.body.removeChild(textarea);
+    }
+    
+    // Refresh button
+    document.getElementById('refresh').onclick = () => {
+      parent.postMessage({ pluginMessage: { type: 'refresh' } }, '*');
+    };
+    
+    // Cancel button
+    document.getElementById('cancel').onclick = () => {
+      parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
+    };
+  </script>
+</body>
+</html>

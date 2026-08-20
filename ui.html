@@ -1,419 +1,1072 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <title>Flutter Da Vinci - Vector to CustomPainter</title>
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      padding: 16px;
+    :root {
+      --bg-primary: #1e1e1e;
+      --bg-surface: #252526;
+      --bg-card: #2d2d30;
+      --border-color: #3e3e42;
+      --text-primary: #ffffff;
+      --text-secondary: #969696;
+      --accent-blue: #0d99ff;
+      --accent-blue-hover: #007be5;
+      --accent-green: #10b981;
+      --accent-green-hover: #059669;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --code-bg: #141416;
+      --badge-bg: #38383e;
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
     }
-    
-    h2 {
-      margin: 0 0 16px 0;
-      font-size: 18px;
-      font-weight: 600;
-    }
-    
-    .status {
-      padding: 12px;
-      background: #f0f0f0;
-      border-radius: 6px;
-      margin-bottom: 16px;
-      text-align: center;
-      color: #666;
-    }
-    
-    .section {
-      background: #fff;
-      border: 1px solid #e0e0e0;
-      border-radius: 6px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-    
-    .section-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #333;
-      margin: 0 0 12px 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .element-info {
-      background: #f8f9fa;
-      padding: 12px;
-      border-radius: 6px;
-      margin-bottom: 16px;
-    }
-    
-    .element-info div {
-      margin: 4px 0;
-      font-size: 13px;
-    }
-    
-    .label {
-      font-weight: 600;
-      color: #555;
-    }
-    
-    .code-container {
-      background: #1e1e1e;
-      color: #d4d4d4;
-      padding: 16px;
-      border-radius: 6px;
-      font-family: 'Monaco', 'Courier New', monospace;
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
       font-size: 12px;
-      max-height: 400px;
-      overflow-y: auto;
-      white-space: pre;
       line-height: 1.5;
+      padding: 14px;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
     }
-    
-    .keyword { color: #569cd6; }
-    .class-name { color: #4ec9b0; }
-    .string { color: #ce9178; }
-    .number { color: #b5cea8; }
-    .comment { color: #6a9955; }
-    .function { color: #dcdcaa; }
-    
-    .warning {
-      background: #fff3cd;
-      border: 1px solid #ffc107;
-      color: #856404;
-      padding: 12px;
-      border-radius: 6px;
-      font-size: 13px;
-      margin-bottom: 16px;
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
     }
-    
-    .error {
-      background: #f8d7da;
-      border: 1px solid #dc3545;
-      color: #721c24;
-      padding: 12px;
-      border-radius: 6px;
-      font-size: 13px;
-      margin-bottom: 16px;
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #0066cc;
-      color: white;
-      border: none;
-      border-radius: 6px;
+
+    .header-title h1 {
       font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+    }
+
+    .header-badge {
+      font-size: 10px;
+      font-weight: 500;
+      background: rgba(13, 153, 255, 0.15);
+      color: var(--accent-blue);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Main Container */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-right: 2px;
+    }
+
+    /* Scrollbar */
+    .main-content::-webkit-scrollbar,
+    .code-container::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .main-content::-webkit-scrollbar-thumb,
+    .code-container::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 3px;
+    }
+
+    /* Empty / Status States */
+    .status-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 28px 16px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--text-secondary);
+      min-height: 200px;
+    }
+
+    .status-card .icon {
+      font-size: 36px;
+      line-height: 1;
+    }
+
+    .status-card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .status-card p {
+      font-size: 12px;
+      max-width: 260px;
+    }
+
+    .status-card.warning {
+      border-color: rgba(245, 158, 11, 0.3);
+      background: rgba(245, 158, 11, 0.05);
+    }
+
+    .status-card.error {
+      border-color: rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+    /* Element Summary Card */
+    .element-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .element-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .element-name {
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 240px;
+    }
+
+    .element-tags {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tag {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--badge-bg);
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .tag.flattened {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+    }
+
+    .element-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border-color);
+      padding-top: 8px;
+    }
+
+    .element-meta-item strong {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    /* Preview & Tabs Container */
+    .preview-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .preview-box {
+      background: 
+        linear-gradient(45deg, #181818 25%, transparent 25%), 
+        linear-gradient(-45deg, #181818 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, #181818 75%), 
+        linear-gradient(-45deg, transparent 75%, #181818 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+      background-color: #121212;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .preview-box svg {
+      max-height: 100%;
+      max-width: 100%;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+    }
+
+    /* Segmented Navigation / Tabs */
+    .tab-bar {
+      display: flex;
+      background: var(--bg-card);
+      border-radius: 6px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      border-radius: 4px;
       cursor: pointer;
-      margin-top: 8px;
+      transition: all 0.15s ease;
+      text-align: center;
     }
-    
-    button:hover {
-      background: #0052a3;
+
+    .tab-btn.active {
+      background: var(--accent-blue);
+      color: #ffffff;
+      font-weight: 600;
     }
-    
-    button.secondary {
-      background: #e0e0e0;
-      color: #333;
+
+    .tab-btn:hover:not(.active) {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
     }
-    
-    button.secondary:hover {
-      background: #d0d0d0;
+
+    /* Options / Toggles */
+    .options-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 4px 0;
     }
-    
-    button.copy-code {
-      background: #28a745;
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      user-select: none;
     }
-    
-    button.copy-code:hover {
-      background: #218838;
+
+    .checkbox-label input {
+      accent-color: var(--accent-blue);
+      cursor: pointer;
+    }
+
+    .checkbox-label:hover {
+      color: var(--text-primary);
+    }
+
+    /* Code Container */
+    .code-wrapper {
+      position: relative;
+      background: var(--code-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 220px;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--border-color);
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .code-container {
+      padding: 12px;
+      color: #d4d4d4;
+      font-family: 'SF Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
+      font-size: 11px;
+      line-height: 1.6;
+      overflow-y: auto;
+      flex: 1;
+      white-space: pre;
+      user-select: text;
+    }
+
+    /* Syntax Highlighting */
+    .kw { color: #569cd6; font-weight: 500; }
+    .type { color: #4ec9b0; }
+    .fn { color: #dcdcaa; }
+    .str { color: #ce9178; }
+    .num { color: #b5cea8; }
+    .cmt { color: #6a9955; font-style: italic; }
+    .prop { color: #9cdcfe; }
+
+    /* Footer / Actions */
+    .footer-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary {
+      flex: 1;
+      background: var(--accent-green);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-green-hover);
+    }
+
+    .btn-primary.copied {
+      background: var(--accent-blue);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      color: var(--text-primary);
+      background: var(--border-color);
     }
   </style>
 </head>
 <body>
-  <h2>🎨 Da Vinci Art to Code</h2>
-  
-  <div id="status" class="status">
-    Select a vector element on the canvas
-  </div>
-  
-  <div id="content" style="display: none;">
-    <div class="element-info">
-      <div><span class="label">Name:</span> <span id="elementName">-</span></div>
-      <div><span class="label">Type:</span> <span id="elementType">-</span></div>
-      <div><span class="label">Size:</span> <span id="elementSize">-</span></div>
-      <div id="flattenedInfo" style="display: none; color: #0066cc; margin-top: 8px;">
-        ✨ Flattened automatically to extract vector paths
-      </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">
+      <span style="font-size: 16px;">🎨</span>
+      <h1>Flutter Da Vinci</h1>
+      <span class="header-badge">v1.2</span>
     </div>
+  </div>
+
+  <!-- Main Scrollable Area -->
+  <div class="main-content">
     
-    <div id="flutterSection" style="display: none;">
-      <div class="section">
-        <div class="section-title">
-          <span>Flutter CustomPainter Code</span>
+    <!-- No Selection State -->
+    <div id="noSelectionState" class="status-card">
+      <div class="icon">👆</div>
+      <h3>No Vector Selected</h3>
+      <p>Select any shape, icon, group, frame, or boolean operation on your Figma canvas.</p>
+    </div>
+
+    <!-- Multiple Selection State -->
+    <div id="multipleSelectionState" class="status-card warning" style="display: none;">
+      <div class="icon">✨</div>
+      <h3>Multiple Elements Selected</h3>
+      <p id="multiCountMsg">Please select a single element or group them into a single frame to generate code.</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="status-card error" style="display: none;">
+      <div class="icon">⚠️</div>
+      <h3>Unable to Convert</h3>
+      <p id="errorMsgText">Element could not be converted to vector paths.</p>
+    </div>
+
+    <!-- Content State (When Selection Active) -->
+    <div id="selectionContent" style="display: none; display: flex; flex-direction: column; gap: 10px;">
+      
+      <!-- Element Info Card -->
+      <div class="element-card">
+        <div class="element-header">
+          <span class="element-name" id="elementName">-</span>
+          <div class="element-tags">
+            <span class="tag" id="elementType">-</span>
+            <span class="tag flattened" id="flattenBadge" style="display: none;">Auto-Flattened</span>
+          </div>
         </div>
-        <div id="flutterCodeContainer" class="code-container"></div>
-        <button class="copy-code" onclick="copyFlutterCode()">📋 Copy Flutter Code</button>
+        <div class="element-meta">
+          <div class="element-meta-item">Size: <strong id="metaSize">-</strong></div>
+          <div class="element-meta-item">Paths: <strong id="metaPaths">-</strong></div>
+          <div class="element-meta-item">Fill: <strong id="metaFill">None</strong></div>
+        </div>
       </div>
+
+      <!-- Preview Card -->
+      <div class="preview-card">
+        <div class="preview-header">
+          <span>Live Vector Preview</span>
+          <span id="previewDimensions" style="font-size: 10px; color: var(--text-secondary);"></span>
+        </div>
+        <div class="preview-box" id="previewContainer">
+          <!-- SVG injected here -->
+        </div>
+      </div>
+
+      <!-- Options & Tabs -->
+      <div class="preview-card" style="padding: 8px 10px;">
+        <div class="tab-bar">
+          <button class="tab-btn active" id="tabPainter" onclick="setTab('painter')">CustomPainter</button>
+          <button class="tab-btn" id="tabWidget" onclick="setTab('widget')">Widget Component</button>
+          <button class="tab-btn" id="tabPaths" onclick="setTab('paths')">Path Code Only</button>
+        </div>
+
+        <div class="options-row">
+          <label class="checkbox-label" title="Adds color parameter to constructor for dynamic styling">
+            <input type="checkbox" id="optDynamicColor" checked onchange="updateGeneratedCode()">
+            Dynamic Color Param
+          </label>
+          <label class="checkbox-label" title="Maintains responsive scale with canvas aspect ratio">
+            <input type="checkbox" id="optResponsive" checked onchange="updateGeneratedCode()">
+            Responsive Scaling
+          </label>
+        </div>
+      </div>
+
+      <!-- Code Output Area -->
+      <div class="code-wrapper">
+        <div class="code-header">
+          <span id="codeTitle">Dart / Flutter</span>
+          <span id="lineCount" style="font-size: 10px;">0 lines</span>
+        </div>
+        <div id="codeDisplay" class="code-container"></div>
+      </div>
+
     </div>
-    
-    <div id="noVectorWarning" style="display: none;" class="warning">
-      ⚠️ Unable to extract vector paths from this element.
-    </div>
-    
-    <div id="vectorError" style="display: none;" class="error"></div>
-    
-    <button id="refresh">🔄 Refresh</button>
+
   </div>
-  
-  <button id="cancel" class="secondary">Close</button>
+
+  <!-- Footer Actions -->
+  <div class="footer-actions">
+    <button class="btn btn-secondary" onclick="requestRefresh()" title="Refresh selection">🔄</button>
+    <button class="btn btn-primary" id="btnCopy" onclick="copyCode()">
+      <span>📋</span> <span id="btnCopyText">Copy Flutter Code</span>
+    </button>
+  </div>
 
   <script>
-    let currentFlutterCode = '';
-    
-    // Listen for messages from the plugin code
+    // State variables
+    let currentData = null;
+    let currentTab = 'painter'; // 'painter' | 'widget' | 'paths'
+    let currentRawCode = '';
+
+    // Message listener from Figma backend
     window.onmessage = (event) => {
       const msg = event.data.pluginMessage;
-      
+      if (!msg) return;
+
+      const noSel = document.getElementById('noSelectionState');
+      const multiSel = document.getElementById('multipleSelectionState');
+      const errState = document.getElementById('errorState');
+      const content = document.getElementById('selectionContent');
+
+      // Reset states
+      noSel.style.display = 'none';
+      multiSel.style.display = 'none';
+      errState.style.display = 'none';
+      content.style.display = 'none';
+
       if (msg.type === 'no-selection') {
-        document.getElementById('status').textContent = '⚠️ No element selected, click on any element to continue!';
-        document.getElementById('status').style.display = 'block';
-        document.getElementById('content').style.display = 'none';
-      } 
-      else if (msg.type === 'multiple-selection') {
-        document.getElementById('status').textContent = `⚠️ ${msg.count} elements selected. Please select only one.`;
-        document.getElementById('status').style.display = 'block';
-        document.getElementById('content').style.display = 'none';
-      }
-      else if (msg.type === 'selection-data') {
+        noSel.style.display = 'flex';
+      } else if (msg.type === 'multiple-selection') {
+        document.getElementById('multiCountMsg').textContent = `${msg.count} elements selected. Please select a single element or group them.`;
+        multiSel.style.display = 'flex';
+      } else if (msg.type === 'selection-data') {
         const data = msg.data;
-        
-        // Hide status, show content
-        document.getElementById('status').style.display = 'none';
-        document.getElementById('content').style.display = 'block';
-        
-        // Update element info
-        document.getElementById('elementName').textContent = data.name;
-        document.getElementById('elementType').textContent = data.type;
-        document.getElementById('elementSize').textContent = `${Math.round(data.width)} × ${Math.round(data.height)}`;
-        
-        // Show flatten info if element was flattened
-        const flattenedInfo = document.getElementById('flattenedInfo');
-        if (data.wasFlattened) {
-          flattenedInfo.style.display = 'block';
+        currentData = data;
+
+        if (data.flattenError || (!data.hasVectorPaths && (!data.vectorPaths || data.vectorPaths.length === 0))) {
+          document.getElementById('errorMsgText').textContent = data.flattenError || 'Unable to extract vector paths from this element.';
+          errState.style.display = 'flex';
         } else {
-          flattenedInfo.style.display = 'none';
-        }
-        
-        // Handle Flutter code generation
-        const flutterSection = document.getElementById('flutterSection');
-        const noVectorWarning = document.getElementById('noVectorWarning');
-        const vectorError = document.getElementById('vectorError');
-        
-        // Reset displays
-        flutterSection.style.display = 'none';
-        noVectorWarning.style.display = 'none';
-        vectorError.style.display = 'none';
-        
-        if (data.flattenError) {
-          // Show error if flatten failed
-          vectorError.textContent = '❌ ' + data.flattenError;
-          vectorError.style.display = 'block';
-        } else if (data.hasVectorPaths && data.vectorPaths.length > 0) {
-          // Successfully got vector paths
-          flutterSection.style.display = 'block';
-          generateFlutterCode(data);
-        } else {
-          // No paths available
-          noVectorWarning.textContent = '⚠️ Unable to extract vector paths from this element.';
-          noVectorWarning.style.display = 'block';
+          content.style.display = 'flex';
+          populateElementInfo(data);
+          renderPreview(data);
+          updateGeneratedCode();
         }
       }
     };
-    
-    function generateFlutterCode(data) {
-      const className = sanitizeClassName(data.name);
-      const width = Math.round(data.width);
-      const height = Math.round(data.height);
-      const fillColor = data.fillColor || '0xFF000000';
-      const strokeColor = data.strokeInfo.color;
-      const strokeWidth = data.strokeInfo.width;
+
+    function setTab(tab) {
+      currentTab = tab;
+      document.getElementById('tabPainter').className = 'tab-btn' + (tab === 'painter' ? ' active' : '');
+      document.getElementById('tabWidget').className = 'tab-btn' + (tab === 'widget' ? ' active' : '');
+      document.getElementById('tabPaths').className = 'tab-btn' + (tab === 'paths' ? ' active' : '');
+      updateGeneratedCode();
+    }
+
+    function populateElementInfo(data) {
+      document.getElementById('elementName').textContent = data.name || 'Unnamed';
+      document.getElementById('elementType').textContent = data.type || 'Shape';
+      document.getElementById('metaSize').textContent = `${Math.round(data.width)} × ${Math.round(data.height)} px`;
+      document.getElementById('metaPaths').textContent = `${data.vectorPaths ? data.vectorPaths.length : 0}`;
+      document.getElementById('metaFill').textContent = data.fillColor ? data.fillColor.replace('0x', '#') : 'None';
       
-      let code = `import 'package:flutter/material.dart';\n\n`;
-      code += `class ${className}Painter extends CustomPainter {\n`;
+      const flattenBadge = document.getElementById('flattenBadge');
+      flattenBadge.style.display = data.wasFlattened ? 'inline-block' : 'none';
+      document.getElementById('previewDimensions').textContent = `${Math.round(data.width)} × ${Math.round(data.height)}`;
+    }
+
+    // Convert 0xAARRGGBB to CSS color
+    function hexToCss(hexColor) {
+      if (!hexColor || hexColor.length < 8) return '#000000';
+      const clean = hexColor.replace('0x', '').replace('#', '');
+      if (clean.length === 8) {
+        const a = parseInt(clean.substring(0, 2), 16) / 255;
+        const r = parseInt(clean.substring(2, 4), 16);
+        const g = parseInt(clean.substring(4, 6), 16);
+        const b = parseInt(clean.substring(6, 8), 16);
+        return `rgba(${r}, ${g}, ${b}, ${a.toFixed(2)})`;
+      }
+      return '#' + clean;
+    }
+
+    // Live SVG preview generator
+    function renderPreview(data) {
+      const container = document.getElementById('previewContainer');
+      const w = Math.max(1, Math.round(data.width));
+      const h = Math.max(1, Math.round(data.height));
+      const fillColor = data.fillColor ? hexToCss(data.fillColor) : '#ffffff';
+      const strokeColor = data.strokeInfo && data.strokeInfo.color ? hexToCss(data.strokeInfo.color) : 'none';
+      const strokeWidth = data.strokeInfo && data.strokeInfo.width ? data.strokeInfo.width : 0;
+
+      let pathsHtml = '';
+      if (data.vectorPaths && Array.isArray(data.vectorPaths)) {
+        data.vectorPaths.forEach(p => {
+          const fillRule = p.windingRule === 'EVENODD' ? 'evenodd' : 'nonzero';
+          pathsHtml += `<path d="${p.data}" fill="${data.fillColor ? fillColor : 'none'}" fill-rule="${fillRule}" stroke="${strokeColor}" stroke-width="${strokeWidth}" />`;
+        });
+      }
+
+      container.innerHTML = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">${pathsHtml}</svg>`;
+    }
+
+    // SVG Path Parser (Handles M, L, H, V, C, S, Q, T, A, Z with relative coords & param chaining)
+    function parseSvgPath(pathData, pathVarName = 'path') {
+      const commands = [];
+      const regex = /([a-df-z]|[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?)/gi;
+      const tokens = [];
+      let match;
+      
+      while ((match = regex.exec(pathData)) !== null) {
+        const str = match[0];
+        if (/^[a-df-z]$/i.test(str)) {
+          tokens.push({ type: 'CMD', val: str });
+        } else {
+          const num = parseFloat(str);
+          if (!isNaN(num)) {
+            tokens.push({ type: 'NUM', val: num });
+          }
+        }
+      }
+
+      let currentX = 0;
+      let currentY = 0;
+      let startX = 0;
+      let startY = 0;
+      let lastControlX = 0;
+      let lastControlY = 0;
+      let lastCmd = '';
+      let currentCmd = '';
+      let i = 0;
+
+      const fmt = (n) => {
+        const fixed = n.toFixed(2);
+        return fixed.replace(/\.?0+$/, '') + (fixed.indexOf('.') === -1 ? '.0' : '');
+      };
+
+      while (i < tokens.length) {
+        if (tokens[i].type === 'CMD') {
+          currentCmd = tokens[i].val;
+          i++;
+        }
+        if (!currentCmd) break;
+
+        const isRel = currentCmd === currentCmd.toLowerCase();
+        const cmdUpper = currentCmd.toUpperCase();
+
+        switch (cmdUpper) {
+          case 'M': {
+            if (i + 1 >= tokens.length || tokens[i].type !== 'NUM' || tokens[i+1].type !== 'NUM') break;
+            let x = tokens[i++].val;
+            let y = tokens[i++].val;
+            if (isRel) { x += currentX; y += currentY; }
+            currentX = x; currentY = y;
+            startX = x; startY = y;
+            lastControlX = x; lastControlY = y;
+            commands.push(`${pathVarName}.moveTo(${fmt(x)}, ${fmt(y)});`);
+
+            // Subsequent number pairs for M/m are treated as L/l
+            while (i + 1 < tokens.length && tokens[i].type === 'NUM' && tokens[i+1].type === 'NUM') {
+              let lx = tokens[i++].val;
+              let ly = tokens[i++].val;
+              if (isRel) { lx += currentX; ly += currentY; }
+              currentX = lx; currentY = ly;
+              lastControlX = lx; lastControlY = ly;
+              commands.push(`${pathVarName}.lineTo(${fmt(lx)}, ${fmt(ly)});`);
+            }
+            break;
+          }
+          case 'L': {
+            while (i + 1 < tokens.length && tokens[i].type === 'NUM' && tokens[i+1].type === 'NUM') {
+              let x = tokens[i++].val;
+              let y = tokens[i++].val;
+              if (isRel) { x += currentX; y += currentY; }
+              currentX = x; currentY = y;
+              lastControlX = x; lastControlY = y;
+              commands.push(`${pathVarName}.lineTo(${fmt(x)}, ${fmt(y)});`);
+            }
+            break;
+          }
+          case 'H': {
+            while (i < tokens.length && tokens[i].type === 'NUM') {
+              let x = tokens[i++].val;
+              if (isRel) { x += currentX; }
+              currentX = x;
+              lastControlX = x; lastControlY = currentY;
+              commands.push(`${pathVarName}.lineTo(${fmt(x)}, ${fmt(currentY)});`);
+            }
+            break;
+          }
+          case 'V': {
+            while (i < tokens.length && tokens[i].type === 'NUM') {
+              let y = tokens[i++].val;
+              if (isRel) { y += currentY; }
+              currentY = y;
+              lastControlX = currentX; lastControlY = y;
+              commands.push(`${pathVarName}.lineTo(${fmt(currentX)}, ${fmt(y)});`);
+            }
+            break;
+          }
+          case 'C': {
+            while (i + 5 < tokens.length && 
+                   tokens[i].type === 'NUM' && tokens[i+1].type === 'NUM' &&
+                   tokens[i+2].type === 'NUM' && tokens[i+3].type === 'NUM' &&
+                   tokens[i+4].type === 'NUM' && tokens[i+5].type === 'NUM') {
+              let cp1x = tokens[i++].val;
+              let cp1y = tokens[i++].val;
+              let cp2x = tokens[i++].val;
+              let cp2y = tokens[i++].val;
+              let endX = tokens[i++].val;
+              let endY = tokens[i++].val;
+              if (isRel) {
+                cp1x += currentX; cp1y += currentY;
+                cp2x += currentX; cp2y += currentY;
+                endX += currentX; endY += currentY;
+              }
+              lastControlX = cp2x; lastControlY = cp2y;
+              currentX = endX; currentY = endY;
+              commands.push(`${pathVarName}.cubicTo(${fmt(cp1x)}, ${fmt(cp1y)}, ${fmt(cp2x)}, ${fmt(cp2y)}, ${fmt(endX)}, ${fmt(endY)});`);
+            }
+            break;
+          }
+          case 'S': {
+            while (i + 3 < tokens.length && 
+                   tokens[i].type === 'NUM' && tokens[i+1].type === 'NUM' &&
+                   tokens[i+2].type === 'NUM' && tokens[i+3].type === 'NUM') {
+              let cp2x = tokens[i++].val;
+              let cp2y = tokens[i++].val;
+              let endX = tokens[i++].val;
+              let endY = tokens[i++].val;
+              if (isRel) {
+                cp2x += currentX; cp2y += currentY;
+                endX += currentX; endY += currentY;
+              }
+              let cp1x = currentX;
+              let cp1y = currentY;
+              if (['C', 'c', 'S', 's'].indexOf(lastCmd) !== -1) {
+                cp1x = 2 * currentX - lastControlX;
+                cp1y = 2 * currentY - lastControlY;
+              }
+              lastControlX = cp2x; lastControlY = cp2y;
+              currentX = endX; currentY = endY;
+              commands.push(`${pathVarName}.cubicTo(${fmt(cp1x)}, ${fmt(cp1y)}, ${fmt(cp2x)}, ${fmt(cp2y)}, ${fmt(endX)}, ${fmt(endY)});`);
+            }
+            break;
+          }
+          case 'Q': {
+            while (i + 3 < tokens.length && 
+                   tokens[i].type === 'NUM' && tokens[i+1].type === 'NUM' &&
+                   tokens[i+2].type === 'NUM' && tokens[i+3].type === 'NUM') {
+              let cp1x = tokens[i++].val;
+              let cp1y = tokens[i++].val;
+              let endX = tokens[i++].val;
+              let endY = tokens[i++].val;
+              if (isRel) {
+                cp1x += currentX; cp1y += currentY;
+                endX += currentX; endY += currentY;
+              }
+              lastControlX = cp1x; lastControlY = cp1y;
+              currentX = endX; currentY = endY;
+              commands.push(`${pathVarName}.quadraticBezierTo(${fmt(cp1x)}, ${fmt(cp1y)}, ${fmt(endX)}, ${fmt(endY)});`);
+            }
+            break;
+          }
+          case 'T': {
+            while (i + 1 < tokens.length && tokens[i].type === 'NUM' && tokens[i+1].type === 'NUM') {
+              let endX = tokens[i++].val;
+              let endY = tokens[i++].val;
+              if (isRel) { endX += currentX; endY += currentY; }
+              let cpx = currentX;
+              let cpy = currentY;
+              if (['Q', 'q', 'T', 't'].indexOf(lastCmd) !== -1) {
+                cpx = 2 * currentX - lastControlX;
+                cpy = 2 * currentY - lastControlY;
+              }
+              lastControlX = cpx; lastControlY = cpy;
+              currentX = endX; currentY = endY;
+              commands.push(`${pathVarName}.quadraticBezierTo(${fmt(cpx)}, ${fmt(cpy)}, ${fmt(endX)}, ${fmt(endY)});`);
+            }
+            break;
+          }
+          case 'A': {
+            while (i + 6 < tokens.length && 
+                   tokens[i].type === 'NUM' && tokens[i+1].type === 'NUM' &&
+                   tokens[i+2].type === 'NUM' && tokens[i+3].type === 'NUM' &&
+                   tokens[i+4].type === 'NUM' && tokens[i+5].type === 'NUM' &&
+                   tokens[i+6].type === 'NUM') {
+              let rx = Math.abs(tokens[i++].val);
+              let ry = Math.abs(tokens[i++].val);
+              let angle = tokens[i++].val;
+              let largeArc = tokens[i++].val !== 0;
+              let sweep = tokens[i++].val !== 0;
+              let endX = tokens[i++].val;
+              let endY = tokens[i++].val;
+              if (isRel) { endX += currentX; endY += currentY; }
+              const rot = angle !== 0 ? `(${fmt(angle)} * 3.141592653589793 / 180)` : '0.0';
+              commands.push(`${pathVarName}.arcToPoint(Offset(${fmt(endX)}, ${fmt(endY)}), radius: Radius.elliptical(${fmt(rx)}, ${fmt(ry)}), rotation: ${rot}, largeArc: ${largeArc}, clockwise: ${sweep});`);
+              currentX = endX; currentY = endY;
+              lastControlX = endX; lastControlY = endY;
+            }
+            break;
+          }
+          case 'Z': {
+            currentX = startX; currentY = startY;
+            lastControlX = startX; lastControlY = startY;
+            commands.push(`${pathVarName}.close();`);
+            break;
+          }
+          default:
+            i++;
+            break;
+        }
+        lastCmd = currentCmd;
+      }
+      return commands;
+    }
+
+    function sanitizeClassName(name) {
+      let sanitized = (name || '').replace(/[^a-zA-Z0-9]/g, '');
+      if (sanitized.length === 0) sanitized = 'CustomGraphic';
+      return sanitized.charAt(0).toUpperCase() + sanitized.slice(1);
+    }
+
+    function updateGeneratedCode() {
+      if (!currentData || !currentData.vectorPaths) return;
+
+      const data = currentData;
+      const className = sanitizeClassName(data.name);
+      const width = Math.max(1, Math.round(data.width));
+      const height = Math.max(1, Math.round(data.height));
+      const isDynamic = document.getElementById('optDynamicColor').checked;
+      const isResponsive = document.getElementById('optResponsive').checked;
+      const defaultFill = data.fillColor || '0xFF000000';
+      const hasStroke = data.strokeInfo && data.strokeInfo.color && data.strokeInfo.width > 0;
+      const defaultStroke = hasStroke ? data.strokeInfo.color : '0xFF000000';
+      const strokeWidth = hasStroke ? data.strokeInfo.width.toFixed(1) : '1.0';
+
+      let code = '';
+
+      if (currentTab === 'paths') {
+        // Raw Paths Mode
+        data.vectorPaths.forEach((vp, idx) => {
+          const varName = `path${idx > 0 ? (idx + 1) : ''}`;
+          code += `final ${varName} = Path()`;
+          if (vp.windingRule === 'EVENODD') {
+            code += `\n  ..fillType = PathFillType.evenOdd;\n`;
+          } else {
+            code += `;\n`;
+          }
+          const cmds = parseSvgPath(vp.data, varName);
+          cmds.forEach(cmd => { code += `${cmd}\n`; });
+          code += `\n`;
+        });
+      } 
+      else if (currentTab === 'widget') {
+        // Widget Component Mode
+        code += `import 'package:flutter/material.dart';\n\n`;
+        code += `/// A responsive Flutter icon widget generated from Figma "${data.name}".\n`;
+        code += `class ${className}Widget extends StatelessWidget {\n`;
+        code += `  final double? width;\n`;
+        code += `  final double? height;\n`;
+        code += `  final Color? color;\n`;
+        if (hasStroke) {
+          code += `  final Color? strokeColor;\n`;
+        }
+        code += `\n  const ${className}Widget({\n`;
+        code += `    super.key,\n`;
+        code += `    this.width = ${width}.0,\n`;
+        code += `    this.height = ${height}.0,\n`;
+        code += `    this.color,\n`;
+        if (hasStroke) {
+          code += `    this.strokeColor,\n`;
+        }
+        code += `  });\n\n`;
+        code += `  @override\n`;
+        code += `  Widget build(BuildContext context) {\n`;
+        code += `    return CustomPaint(\n`;
+        code += `      size: Size(width ?? ${width}.0, height ?? ${height}.0),\n`;
+        code += `      painter: ${className}Painter(\n`;
+        if (isDynamic) {
+          code += `        color: color,\n`;
+          if (hasStroke) {
+            code += `        strokeColor: strokeColor,\n`;
+          }
+        }
+        code += `      ),\n`;
+        code += `    );\n`;
+        code += `  }\n`;
+        code += `}\n\n`;
+
+        // Append Painter
+        code += generatePainterCode(className, width, height, isDynamic, isResponsive, data, defaultFill, hasStroke, defaultStroke, strokeWidth);
+      } 
+      else {
+        // CustomPainter Mode (Default)
+        code += `import 'package:flutter/material.dart';\n\n`;
+        code += generatePainterCode(className, width, height, isDynamic, isResponsive, data, defaultFill, hasStroke, defaultStroke, strokeWidth);
+      }
+
+      currentRawCode = code;
+      displayCode(code);
+    }
+
+    function generatePainterCode(className, width, height, isDynamic, isResponsive, data, defaultFill, hasStroke, defaultStroke, strokeWidth) {
+      let code = `class ${className}Painter extends CustomPainter {\n`;
+      if (isDynamic) {
+        code += `  final Color? color;\n`;
+        if (hasStroke) {
+          code += `  final Color? strokeColor;\n`;
+        }
+        code += `\n  const ${className}Painter({\n`;
+        code += `    this.color,\n`;
+        if (hasStroke) {
+          code += `    this.strokeColor,\n`;
+        }
+        code += `  });\n\n`;
+      } else {
+        code += `  const ${className}Painter();\n\n`;
+      }
+
       code += `  @override\n`;
       code += `  void paint(Canvas canvas, Size size) {\n`;
-      code += `    // Original design size from Figma\n`;
-      code += `    const originalWidth = ${width}.0;\n`;
-      code += `    const originalHeight = ${height}.0;\n\n`;
-      code += `    // Calculate scale factors to make it responsive\n`;
-      code += `    final scaleX = size.width / originalWidth;\n`;
-      code += `    final scaleY = size.height / originalHeight;\n`;
-      code += `    final scale = scaleX < scaleY ? scaleX : scaleY; // Maintain aspect ratio\n\n`;
-      
-      // Fill paint
-      code += `    final fillPaint = Paint()\n`;
-      code += `      ..color = Color(${fillColor})\n`;
-      code += `      ..style = PaintingStyle.fill;\n\n`;
-      
-      // Stroke paint if exists
-      if (strokeColor && strokeWidth > 0) {
-        code += `    final strokePaint = Paint()\n`;
-        code += `      ..color = Color(${strokeColor})\n`;
-        code += `      ..style = PaintingStyle.stroke\n`;
-        code += `      ..strokeWidth = ${strokeWidth.toFixed(1)} * scale; // Responsive stroke\n\n`;
+
+      if (isResponsive) {
+        code += `    // Calculate responsive scale factor\n`;
+        code += `    final scaleX = size.width / ${width}.0;\n`;
+        code += `    final scaleY = size.height / ${height}.0;\n`;
+        code += `    final scale = scaleX < scaleY ? scaleX : scaleY;\n\n`;
       }
-      
-      code += `    // Save canvas state and apply scaling\n`;
-      code += `    canvas.save();\n`;
-      code += `    canvas.scale(scale, scale);\n\n`;
-      
-      // Generate paths
-      data.vectorPaths.forEach((vectorPath, index) => {
-        code += `    final path${index > 0 ? index : ''} = Path();\n`;
-        const pathCommands = parseSvgPath(vectorPath.data);
-        pathCommands.forEach(cmd => {
+
+      // Fill Paint
+      if (data.fillColor) {
+        code += `    final fillPaint = Paint()\n`;
+        if (isDynamic) {
+          code += `      ..color = color ?? const Color(${defaultFill})\n`;
+        } else {
+          code += `      ..color = const Color(${defaultFill})\n`;
+        }
+        code += `      ..style = PaintingStyle.fill;\n\n`;
+      }
+
+      // Stroke Paint
+      if (hasStroke) {
+        code += `    final strokePaint = Paint()\n`;
+        if (isDynamic) {
+          code += `      ..color = strokeColor ?? (color ?? const Color(${defaultStroke}))\n`;
+        } else {
+          code += `      ..color = const Color(${defaultStroke})\n`;
+        }
+        code += `      ..style = PaintingStyle.stroke\n`;
+        if (isResponsive) {
+          code += `      ..strokeWidth = ${strokeWidth} * scale`;
+        } else {
+          code += `      ..strokeWidth = ${strokeWidth}`;
+        }
+        if (data.strokeInfo.strokeCap === 'round') code += `\n      ..strokeCap = StrokeCap.round`;
+        else if (data.strokeInfo.strokeCap === 'square') code += `\n      ..strokeCap = StrokeCap.square`;
+        if (data.strokeInfo.strokeJoin === 'round') code += `\n      ..strokeJoin = StrokeJoin.round`;
+        else if (data.strokeInfo.strokeJoin === 'bevel') code += `\n      ..strokeJoin = StrokeJoin.bevel`;
+        code += `;\n\n`;
+      }
+
+      if (isResponsive) {
+        code += `    canvas.save();\n`;
+        code += `    canvas.scale(scale, scale);\n\n`;
+      }
+
+      // Generate each path
+      data.vectorPaths.forEach((vp, idx) => {
+        const varName = `path${idx > 0 ? (idx + 1) : ''}`;
+        code += `    final ${varName} = Path()`;
+        if (vp.windingRule === 'EVENODD') {
+          code += `\n      ..fillType = PathFillType.evenOdd;\n`;
+        } else {
+          code += `;\n`;
+        }
+
+        const cmds = parseSvgPath(vp.data, varName);
+        cmds.forEach(cmd => {
           code += `    ${cmd}\n`;
         });
         code += `\n`;
-        
-        // Draw the path
-        code += `    canvas.drawPath(path${index > 0 ? index : ''}, fillPaint);\n`;
-        if (strokeColor && strokeWidth > 0) {
-          code += `    canvas.drawPath(path${index > 0 ? index : ''}, strokePaint);\n`;
+
+        if (data.fillColor) {
+          code += `    canvas.drawPath(${varName}, fillPaint);\n`;
+        }
+        if (hasStroke) {
+          code += `    canvas.drawPath(${varName}, strokePaint);\n`;
         }
         code += `\n`;
       });
-      
-      code += `    // Restore canvas state\n`;
-      code += `    canvas.restore();\n`;
+
+      if (isResponsive) {
+        code += `    canvas.restore();\n`;
+      }
+
       code += `  }\n\n`;
       code += `  @override\n`;
-      code += `  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;\n`;
-      code += `}\n\n`;
-      
-      // Usage example
-      code += `// Usage Example:\n`;
-      code += `// CustomPaint(\n`;
-      code += `//   size: Size(200, 200), // Any size - will scale automatically!\n`;
-      code += `//   painter: ${className}Painter(),\n`;
-      code += `// )\n`;
-      code += `//\n`;
-      code += `// Or use with aspect ratio:\n`;
-      code += `// AspectRatio(\n`;
-      code += `//   aspectRatio: ${(width / height).toFixed(2)},\n`;
-      code += `//   child: CustomPaint(painter: ${className}Painter()),\n`;
-      code += `// )`;
-      
-      currentFlutterCode = code;
-      displayFlutterCode(code);
-    }
-    
-    function sanitizeClassName(name) {
-      // Remove special characters and spaces, capitalize first letter
-      let sanitized = name.replace(/[^a-zA-Z0-9]/g, '');
-      if (sanitized.length === 0) sanitized = 'CustomShape';
-      return sanitized.charAt(0).toUpperCase() + sanitized.slice(1);
-    }
-    
-    function parseSvgPath(pathData) {
-      const commands = [];
-      const tokens = pathData.match(/[a-zA-Z][^a-zA-Z]*/g) || [];
-      
-      tokens.forEach(token => {
-        const cmd = token[0];
-        const params = token.slice(1).trim().split(/[\s,]+/).map(Number);
-        
-        switch (cmd.toUpperCase()) {
-          case 'M': // MoveTo
-            commands.push(`path${getCurrentPath()}.moveTo(${params[0].toFixed(2)}, ${params[1].toFixed(2)});`);
-            break;
-          case 'L': // LineTo
-            commands.push(`path${getCurrentPath()}.lineTo(${params[0].toFixed(2)}, ${params[1].toFixed(2)});`);
-            break;
-          case 'H': // Horizontal Line
-            commands.push(`path${getCurrentPath()}.lineTo(${params[0].toFixed(2)}, 0); // Horizontal line`);
-            break;
-          case 'V': // Vertical Line
-            commands.push(`path${getCurrentPath()}.lineTo(0, ${params[0].toFixed(2)}); // Vertical line`);
-            break;
-          case 'C': // Cubic Bezier
-            commands.push(`path${getCurrentPath()}.cubicTo(${params[0].toFixed(2)}, ${params[1].toFixed(2)}, ${params[2].toFixed(2)}, ${params[3].toFixed(2)}, ${params[4].toFixed(2)}, ${params[5].toFixed(2)});`);
-            break;
-          case 'Q': // Quadratic Bezier
-            commands.push(`path${getCurrentPath()}.quadraticBezierTo(${params[0].toFixed(2)}, ${params[1].toFixed(2)}, ${params[2].toFixed(2)}, ${params[3].toFixed(2)});`);
-            break;
-          case 'A': // Arc (simplified - Flutter doesn't have direct arc, so we add a comment)
-            commands.push(`// Arc command - may need manual conversion`);
-            commands.push(`path${getCurrentPath()}.lineTo(${params[5].toFixed(2)}, ${params[6].toFixed(2)});`);
-            break;
-          case 'Z': // Close path
-            commands.push(`path${getCurrentPath()}.close();`);
-            break;
+      code += `  bool shouldRepaint(covariant ${className}Painter oldDelegate) =>\n`;
+      if (isDynamic) {
+        if (hasStroke) {
+          code += `      oldDelegate.color != color || oldDelegate.strokeColor != strokeColor;\n`;
+        } else {
+          code += `      oldDelegate.color != color;\n`;
         }
-      });
-      
-      return commands;
+      } else {
+        code += `      false;\n`;
+      }
+      code += `}\n`;
+
+      return code;
     }
-    
-    let currentPathIndex = 0;
-    function getCurrentPath() {
-      return currentPathIndex > 0 ? currentPathIndex.toString() : '';
-    }
-    
-    function displayFlutterCode(code) {
-      const container = document.getElementById('flutterCodeContainer');
-      // Simple syntax highlighting
-      const highlighted = code
+
+    function displayCode(code) {
+      const container = document.getElementById('codeDisplay');
+      const lines = code.split('\n').length;
+      document.getElementById('lineCount').textContent = `${lines} lines`;
+
+      // Syntax highlighter for Dart
+      let highlighted = code
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\b(import|class|extends|void|final|return|if|else|const|new|bool|double|override|super|this|covariant)\b/g, '<span class="kw">$1</span>')
+        .replace(/\b(CustomPainter|StatelessWidget|Widget|BuildContext|Canvas|Size|Paint|Color|Path|PaintingStyle|StrokeCap|StrokeJoin|PathFillType|Offset|Radius)\b/g, '<span class="type">$1</span>')
+        .replace(/\b(paint|build|drawPath|moveTo|lineTo|cubicTo|quadraticBezierTo|arcToPoint|close|shouldRepaint|scale|save|restore)\b/g, '<span class="fn">$1</span>')
+        .replace(/('.*?'|".*?")/g, '<span class="str">$1</span>')
+        .replace(/\b(0x[0-9a-fA-F]+|\d+\.?\d*)\b/g, '<span class="num">$1</span>')
+        .replace(/(\/\/.*?)(<br>|\n|$)/g, '<span class="cmt">$1</span>$2')
         .replace(/\n/g, '<br>')
-        .replace(/  /g, '&nbsp;&nbsp;')
-        .replace(/(import|class|extends|void|final|return|if|else|const|new|bool|double)/g, '<span class="keyword">$1</span>')
-        .replace(/(CustomPainter|Canvas|Size|Paint|Color|Path|PaintingStyle)/g, '<span class="class-name">$1</span>')
-        .replace(/(paint|drawPath|moveTo|lineTo|cubicTo|quadraticBezierTo|close)/g, '<span class="function">$1</span>')
-        .replace(/('.*?')/g, '<span class="string">$1</span>')
-        .replace(/(\d+\.?\d*)/g, '<span class="number">$1</span>')
-        .replace(/(\/\/.*?)(<br>|$)/g, '<span class="comment">$1</span>$2');
-      
+        .replace(/  /g, '&nbsp;&nbsp;');
+
       container.innerHTML = highlighted;
     }
-    
-    function copyFlutterCode() {
+
+    function copyCode() {
+      if (!currentRawCode) return;
+
       const textarea = document.createElement('textarea');
-      textarea.value = currentFlutterCode;
+      textarea.value = currentRawCode;
       textarea.style.position = 'fixed';
       textarea.style.opacity = '0';
       document.body.appendChild(textarea);
       textarea.select();
-      
+
       try {
         document.execCommand('copy');
         parent.postMessage({ pluginMessage: { type: 'copy-code' } }, '*');
-        
-        // Visual feedback
-        const button = event.target;
-        const originalText = button.textContent;
-        button.textContent = '✓ Copied!';
+
+        const btn = document.getElementById('btnCopy');
+        const btnText = document.getElementById('btnCopyText');
+        btn.classList.add('copied');
+        btnText.textContent = '✓ Copied to Clipboard!';
+
         setTimeout(() => {
-          button.textContent = originalText;
+          btn.classList.remove('copied');
+          btnText.textContent = 'Copy Flutter Code';
         }, 2000);
       } catch (err) {
-        console.error('Failed to copy:', err);
+        console.error('Failed to copy code:', err);
+      } finally {
+        document.body.removeChild(textarea);
       }
-      
-      document.body.removeChild(textarea);
     }
-    
-    // Refresh button
-    document.getElementById('refresh').onclick = () => {
+
+    function requestRefresh() {
       parent.postMessage({ pluginMessage: { type: 'refresh' } }, '*');
-    };
-    
-    // Cancel button
-    document.getElementById('cancel').onclick = () => {
-      parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
-    };
+    }
   </script>
 </body>
 </html>

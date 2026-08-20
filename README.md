@@ -176,23 +176,29 @@ class StarPainter extends CustomPainter {
 
 Da Vinci intelligently converts SVG path commands to Flutter Path API:
 
-| SVG Command         | Flutter Method                         |
-| ------------------- | -------------------------------------- |
-| `M x y`             | `path.moveTo(x, y)`                    |
-| `L x y`             | `path.lineTo(x, y)`                    |
-| `C x1 y1 x2 y2 x y` | `path.cubicTo(x1, y1, x2, y2, x, y)`   |
-| `Q x1 y1 x y`       | `path.quadraticBezierTo(x1, y1, x, y)` |
-| `Z`                 | `path.close()`                         |
+| SVG Command         | Flutter Method                                        | Notes                                      |
+| ------------------- | ----------------------------------------------------- | ------------------------------------------ |
+| `M x y` / `m dx dy` | `path.moveTo(x, y)`                                   | Move pen (chained coords act as lineTo)    |
+| `L x y` / `l dx dy` | `path.lineTo(x, y)`                                   | Straight line segment                      |
+| `H x` / `h dx`      | `path.lineTo(x, currentY)`                            | Horizontal line (maintains current Y)      |
+| `V y` / `v dy`      | `path.lineTo(currentX, y)`                            | Vertical line (maintains current X)        |
+| `C ...` / `c ...`   | `path.cubicTo(cp1x, cp1y, cp2x, cp2y, endX, endY)`    | Cubic Bezier curve                         |
+| `S ...` / `s ...`   | `path.cubicTo(...)`                                   | Smooth Cubic Bezier (control point reflect)|
+| `Q ...` / `q ...`   | `path.quadraticBezierTo(cp1x, cp1y, endX, endY)`      | Quadratic Bezier curve                     |
+| `T ...` / `t ...`   | `path.quadraticBezierTo(...)`                         | Smooth Quadratic Bezier (CP reflect)       |
+| `A ...` / `a ...`   | `path.arcToPoint(...)`                                | Elliptical Arc to point with radius        |
+| `Z` / `z`           | `path.close()`                                        | Closes subpath & resets origin             |
 
-### Flatten Process
+### Winding Rules & Fill Types
 
-When you select a complex element:
+- **`EVENODD`**: Automatically configured with `path.fillType = PathFillType.evenOdd;` so shapes with cutouts (like donut shapes, gears, and typography) render cleanly.
+- **`NONZERO`**: Standard solid fill mode.
 
-1. Plugin clones the selected node
-2. Applies `figma.flatten()` to the clone
-3. Extracts vector paths from the flattened result
-4. Removes the clone (original untouched!)
-5. Generates Flutter code from extracted paths
+### Flutter Code Modes
+
+1. **`CustomPainter`**: Generates a responsive, aspect-ratio-preserving `CustomPainter` with optional constructor color parameter.
+2. **`Widget Component`**: Generates a drop-in `StatelessWidget` (e.g. `CustomGraphicWidget(size, color)`) wrapping the painter in a `CustomPaint`.
+3. **`Path Code Only`**: Generates pure `Path` setup statements for embedding directly into existing canvas drawing logic.
 
 ## 🤝 Contributing
 
@@ -207,16 +213,11 @@ da-vinci-plugin/
 ├── manifest.json      # Plugin manifest
 ├── code.ts           # Main plugin logic (TypeScript)
 ├── code.js           # Compiled JavaScript (auto-generated)
-├── ui.html           # Plugin UI interface
-└── README.md         # This file
+├── ui.html           # Plugin UI interface with Live Preview & Code Gen
+├── tsconfig.json     # TypeScript configuration
+├── package.json      # Project metadata & scripts
+└── README.md         # Documentation
 ```
-
-### Key Functions
-
-- `sendSelectionData()` - Gathers element data and sends to UI
-- `extractVectorPaths()` - Handles flatten and vector extraction
-- `generateFlutterCode()` - Converts paths to Flutter code
-- `parseSvgPath()` - Parses SVG path commands
 
 ## 📄 License
 
@@ -224,7 +225,7 @@ MIT License - Feel free to use in your projects!
 
 ## 🌟 Credits
 
-Created with ❤️ for the Flutter and Figma communities by Novatuirents
+Created with ❤️ for the Flutter and Figma communities by Novaturients
 
 Check our website: [Novaturients](https://novaturients.in)
 

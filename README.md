@@ -136,7 +136,6 @@ class StarPainter extends CustomPainter {
     // Calculate scale factors to make it responsive
     final scaleX = size.width / originalWidth;
     final scaleY = size.height / originalHeight;
-    final scale = scaleX < scaleY ? scaleX : scaleY;
 
     final fillPaint = Paint()
       ..color = Color(0xFFFF8000)
@@ -144,7 +143,7 @@ class StarPainter extends CustomPainter {
 
     // Save canvas state and apply scaling
     canvas.save();
-    canvas.scale(scale, scale);
+    canvas.scale(scaleX, scaleY);
 
     final path = Path();
     path.moveTo(50.00, 0.00);

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Flutter Da Vinci - Vector to CustomPainter</title>
@@ -89,6 +90,7 @@
       width: 6px;
       height: 6px;
     }
+
     .main-content::-webkit-scrollbar-thumb,
     .code-container::-webkit-scrollbar-thumb {
       background: var(--border-color);
@@ -222,14 +224,7 @@
     }
 
     .preview-box {
-      background: 
-        linear-gradient(45deg, #181818 25%, transparent 25%), 
-        linear-gradient(-45deg, #181818 25%, transparent 25%), 
-        linear-gradient(45deg, transparent 75%, #181818 75%), 
-        linear-gradient(-45deg, transparent 75%, #181818 75%);
-      background-size: 16px 16px;
-      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
-      background-color: #121212;
+      background: #000000;
       border: 1px solid var(--border-color);
       border-radius: 6px;
       height: 100px;
@@ -243,7 +238,6 @@
     .preview-box svg {
       max-height: 100%;
       max-width: 100%;
-      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
     }
 
     /* Segmented Navigation / Tabs */
@@ -344,13 +338,35 @@
     }
 
     /* Syntax Highlighting */
-    .kw { color: #569cd6; font-weight: 500; }
-    .type { color: #4ec9b0; }
-    .fn { color: #dcdcaa; }
-    .str { color: #ce9178; }
-    .num { color: #b5cea8; }
-    .cmt { color: #6a9955; font-style: italic; }
-    .prop { color: #9cdcfe; }
+    .kw {
+      color: #569cd6;
+      font-weight: 500;
+    }
+
+    .type {
+      color: #4ec9b0;
+    }
+
+    .fn {
+      color: #dcdcaa;
+    }
+
+    .str {
+      color: #ce9178;
+    }
+
+    .num {
+      color: #b5cea8;
+    }
+
+    .cmt {
+      color: #6a9955;
+      font-style: italic;
+    }
+
+    .prop {
+      color: #9cdcfe;
+    }
 
     /* Footer / Actions */
     .footer-actions {
@@ -399,6 +415,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- Header -->
@@ -412,7 +429,7 @@
 
   <!-- Main Scrollable Area -->
   <div class="main-content">
-    
+
     <!-- No Selection State -->
     <div id="noSelectionState" class="status-card">
       <div class="icon">👆</div>
@@ -436,7 +453,7 @@
 
     <!-- Content State (When Selection Active) -->
     <div id="selectionContent" style="display: none; display: flex; flex-direction: column; gap: 10px;">
-      
+
       <!-- Element Info Card -->
       <div class="element-card">
         <div class="element-header">
@@ -477,9 +494,14 @@
             <input type="checkbox" id="optDynamicColor" checked onchange="updateGeneratedCode()">
             Dynamic Color Param
           </label>
-          <label class="checkbox-label" title="Maintains responsive scale with canvas aspect ratio">
+          <label class="checkbox-label" title="Scales with canvas width and height">
             <input type="checkbox" id="optResponsive" checked onchange="updateGeneratedCode()">
             Responsive Scaling
+          </label>
+          <label class="checkbox-label"
+            title="Includes 'package:flutter/material.dart' import statement in the generated code">
+            <input type="checkbox" id="optIncludeImport" checked onchange="updateGeneratedCode()">
+            Include Import Statement
           </label>
         </div>
       </div>
@@ -562,7 +584,7 @@
       document.getElementById('metaSize').textContent = `${Math.round(data.width)} × ${Math.round(data.height)} px`;
       document.getElementById('metaPaths').textContent = `${data.vectorPaths ? data.vectorPaths.length : 0}`;
       document.getElementById('metaFill').textContent = data.fillColor ? data.fillColor.replace('0x', '#') : 'None';
-      
+
       const flattenBadge = document.getElementById('flattenBadge');
       flattenBadge.style.display = data.wasFlattened ? 'inline-block' : 'none';
       document.getElementById('previewDimensions').textContent = `${Math.round(data.width)} × ${Math.round(data.height)}`;
@@ -587,15 +609,16 @@
       const container = document.getElementById('previewContainer');
       const w = Math.max(1, Math.round(data.width));
       const h = Math.max(1, Math.round(data.height));
-      const fillColor = data.fillColor ? hexToCss(data.fillColor) : '#ffffff';
-      const strokeColor = data.strokeInfo && data.strokeInfo.color ? hexToCss(data.strokeInfo.color) : 'none';
-      const strokeWidth = data.strokeInfo && data.strokeInfo.width ? data.strokeInfo.width : 0;
+      const hasStroke = data.strokeInfo && data.strokeInfo.width > 0;
+      const strokeWidth = hasStroke ? data.strokeInfo.width : 0;
 
       let pathsHtml = '';
       if (data.vectorPaths && Array.isArray(data.vectorPaths)) {
         data.vectorPaths.forEach(p => {
           const fillRule = p.windingRule === 'EVENODD' ? 'evenodd' : 'nonzero';
-          pathsHtml += `<path d="${p.data}" fill="${data.fillColor ? fillColor : 'none'}" fill-rule="${fillRule}" stroke="${strokeColor}" stroke-width="${strokeWidth}" />`;
+          const fill = data.fillColor ? '#ffffff' : (hasStroke ? 'none' : '#ffffff');
+          const stroke = hasStroke ? '#ffffff' : 'none';
+          pathsHtml += `<path d="${p.data}" fill="${fill}" fill-rule="${fillRule}" stroke="${stroke}" stroke-width="${strokeWidth}" />`;
         });
       }
 
@@ -608,7 +631,7 @@
       const regex = /([a-df-z]|[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?)/gi;
       const tokens = [];
       let match;
-      
+
       while ((match = regex.exec(pathData)) !== null) {
         const str = match[0];
         if (/^[a-df-z]$/i.test(str)) {
@@ -648,7 +671,7 @@
 
         switch (cmdUpper) {
           case 'M': {
-            if (i + 1 >= tokens.length || tokens[i].type !== 'NUM' || tokens[i+1].type !== 'NUM') break;
+            if (i + 1 >= tokens.length || tokens[i].type !== 'NUM' || tokens[i + 1].type !== 'NUM') break;
             let x = tokens[i++].val;
             let y = tokens[i++].val;
             if (isRel) { x += currentX; y += currentY; }
@@ -658,7 +681,7 @@
             commands.push(`${pathVarName}.moveTo(${fmt(x)}, ${fmt(y)});`);
 
             // Subsequent number pairs for M/m are treated as L/l
-            while (i + 1 < tokens.length && tokens[i].type === 'NUM' && tokens[i+1].type === 'NUM') {
+            while (i + 1 < tokens.length && tokens[i].type === 'NUM' && tokens[i + 1].type === 'NUM') {
               let lx = tokens[i++].val;
               let ly = tokens[i++].val;
               if (isRel) { lx += currentX; ly += currentY; }
@@ -669,7 +692,7 @@
             break;
           }
           case 'L': {
-            while (i + 1 < tokens.length && tokens[i].type === 'NUM' && tokens[i+1].type === 'NUM') {
+            while (i + 1 < tokens.length && tokens[i].type === 'NUM' && tokens[i + 1].type === 'NUM') {
               let x = tokens[i++].val;
               let y = tokens[i++].val;
               if (isRel) { x += currentX; y += currentY; }
@@ -700,10 +723,10 @@
             break;
           }
           case 'C': {
-            while (i + 5 < tokens.length && 
-                   tokens[i].type === 'NUM' && tokens[i+1].type === 'NUM' &&
-                   tokens[i+2].type === 'NUM' && tokens[i+3].type === 'NUM' &&
-                   tokens[i+4].type === 'NUM' && tokens[i+5].type === 'NUM') {
+            while (i + 5 < tokens.length &&
+              tokens[i].type === 'NUM' && tokens[i + 1].type === 'NUM' &&
+              tokens[i + 2].type === 'NUM' && tokens[i + 3].type === 'NUM' &&
+              tokens[i + 4].type === 'NUM' && tokens[i + 5].type === 'NUM') {
               let cp1x = tokens[i++].val;
               let cp1y = tokens[i++].val;
               let cp2x = tokens[i++].val;
@@ -722,9 +745,9 @@
             break;
           }
           case 'S': {
-            while (i + 3 < tokens.length && 
-                   tokens[i].type === 'NUM' && tokens[i+1].type === 'NUM' &&
-                   tokens[i+2].type === 'NUM' && tokens[i+3].type === 'NUM') {
+            while (i + 3 < tokens.length &&
+              tokens[i].type === 'NUM' && tokens[i + 1].type === 'NUM' &&
+              tokens[i + 2].type === 'NUM' && tokens[i + 3].type === 'NUM') {
               let cp2x = tokens[i++].val;
               let cp2y = tokens[i++].val;
               let endX = tokens[i++].val;
@@ -746,9 +769,9 @@
             break;
           }
           case 'Q': {
-            while (i + 3 < tokens.length && 
-                   tokens[i].type === 'NUM' && tokens[i+1].type === 'NUM' &&
-                   tokens[i+2].type === 'NUM' && tokens[i+3].type === 'NUM') {
+            while (i + 3 < tokens.length &&
+              tokens[i].type === 'NUM' && tokens[i + 1].type === 'NUM' &&
+              tokens[i + 2].type === 'NUM' && tokens[i + 3].type === 'NUM') {
               let cp1x = tokens[i++].val;
               let cp1y = tokens[i++].val;
               let endX = tokens[i++].val;
@@ -764,7 +787,7 @@
             break;
           }
           case 'T': {
-            while (i + 1 < tokens.length && tokens[i].type === 'NUM' && tokens[i+1].type === 'NUM') {
+            while (i + 1 < tokens.length && tokens[i].type === 'NUM' && tokens[i + 1].type === 'NUM') {
               let endX = tokens[i++].val;
               let endY = tokens[i++].val;
               if (isRel) { endX += currentX; endY += currentY; }
@@ -781,11 +804,11 @@
             break;
           }
           case 'A': {
-            while (i + 6 < tokens.length && 
-                   tokens[i].type === 'NUM' && tokens[i+1].type === 'NUM' &&
-                   tokens[i+2].type === 'NUM' && tokens[i+3].type === 'NUM' &&
-                   tokens[i+4].type === 'NUM' && tokens[i+5].type === 'NUM' &&
-                   tokens[i+6].type === 'NUM') {
+            while (i + 6 < tokens.length &&
+              tokens[i].type === 'NUM' && tokens[i + 1].type === 'NUM' &&
+              tokens[i + 2].type === 'NUM' && tokens[i + 3].type === 'NUM' &&
+              tokens[i + 4].type === 'NUM' && tokens[i + 5].type === 'NUM' &&
+              tokens[i + 6].type === 'NUM') {
               let rx = Math.abs(tokens[i++].val);
               let ry = Math.abs(tokens[i++].val);
               let angle = tokens[i++].val;
@@ -831,6 +854,7 @@
       const height = Math.max(1, Math.round(data.height));
       const isDynamic = document.getElementById('optDynamicColor').checked;
       const isResponsive = document.getElementById('optResponsive').checked;
+      const includeImport = document.getElementById('optIncludeImport').checked;
       const defaultFill = data.fillColor || '0xFF000000';
       const hasStroke = data.strokeInfo && data.strokeInfo.color && data.strokeInfo.width > 0;
       const defaultStroke = hasStroke ? data.strokeInfo.color : '0xFF000000';
@@ -840,6 +864,9 @@
 
       if (currentTab === 'paths') {
         // Raw Paths Mode
+        if (includeImport) {
+          code += `import 'package:flutter/material.dart';\n\n`;
+        }
         data.vectorPaths.forEach((vp, idx) => {
           const varName = `path${idx > 0 ? (idx + 1) : ''}`;
           code += `final ${varName} = Path()`;
@@ -852,10 +879,12 @@
           cmds.forEach(cmd => { code += `${cmd}\n`; });
           code += `\n`;
         });
-      } 
+      }
       else if (currentTab === 'widget') {
         // Widget Component Mode
-        code += `import 'package:flutter/material.dart';\n\n`;
+        if (includeImport) {
+          code += `import 'package:flutter/material.dart';\n\n`;
+        }
         code += `/// A responsive Flutter icon widget generated from Figma "${data.name}".\n`;
         code += `class ${className}Widget extends StatelessWidget {\n`;
         code += `  final double? width;\n`;
@@ -891,10 +920,12 @@
 
         // Append Painter
         code += generatePainterCode(className, width, height, isDynamic, isResponsive, data, defaultFill, hasStroke, defaultStroke, strokeWidth);
-      } 
+      }
       else {
         // CustomPainter Mode (Default)
-        code += `import 'package:flutter/material.dart';\n\n`;
+        if (includeImport) {
+          code += `import 'package:flutter/material.dart';\n\n`;
+        }
         code += generatePainterCode(className, width, height, isDynamic, isResponsive, data, defaultFill, hasStroke, defaultStroke, strokeWidth);
       }
 
@@ -925,8 +956,7 @@
       if (isResponsive) {
         code += `    // Calculate responsive scale factor\n`;
         code += `    final scaleX = size.width / ${width}.0;\n`;
-        code += `    final scaleY = size.height / ${height}.0;\n`;
-        code += `    final scale = scaleX < scaleY ? scaleX : scaleY;\n\n`;
+        code += `    final scaleY = size.height / ${height}.0;\n\n`;
       }
 
       // Fill Paint
@@ -949,11 +979,7 @@
           code += `      ..color = const Color(${defaultStroke})\n`;
         }
         code += `      ..style = PaintingStyle.stroke\n`;
-        if (isResponsive) {
-          code += `      ..strokeWidth = ${strokeWidth} * scale`;
-        } else {
-          code += `      ..strokeWidth = ${strokeWidth}`;
-        }
+        code += `      ..strokeWidth = ${strokeWidth}`;
         if (data.strokeInfo.strokeCap === 'round') code += `\n      ..strokeCap = StrokeCap.round`;
         else if (data.strokeInfo.strokeCap === 'square') code += `\n      ..strokeCap = StrokeCap.square`;
         if (data.strokeInfo.strokeJoin === 'round') code += `\n      ..strokeJoin = StrokeJoin.round`;
@@ -963,7 +989,7 @@
 
       if (isResponsive) {
         code += `    canvas.save();\n`;
-        code += `    canvas.scale(scale, scale);\n\n`;
+        code += `    canvas.scale(scaleX, scaleY);\n\n`;
       }
 
       // Generate each path
@@ -1069,4 +1095,5 @@
     }
   </script>
 </body>
+
 </html>

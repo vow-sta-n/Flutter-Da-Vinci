@@ -274,6 +274,74 @@
       background: rgba(255, 255, 255, 0.05);
     }
 
+    /* Class Name Input */
+    .class-name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .input-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+
+    .input-wrapper input {
+      width: 100%;
+      height: 28px;
+      padding: 4px 28px 4px 8px;
+      font-size: 11px;
+      font-family: 'SF Mono', Monaco, Menlo, Consolas, monospace;
+      color: var(--text-primary);
+      background: var(--code-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .input-wrapper input:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 1px var(--accent-blue);
+    }
+
+    .input-wrapper input::placeholder {
+      color: #666;
+    }
+
+    .input-reset-btn {
+      position: absolute;
+      right: 4px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 12px;
+      padding: 2px 4px;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    .input-reset-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
     /* Options / Toggles */
     .options-row {
       display: flex;
@@ -422,8 +490,7 @@
   <div class="header">
     <div class="header-title">
       <span style="font-size: 16px;">🎨</span>
-      <h1>Flutter Da Vinci</h1>
-      <span class="header-badge">v1.2</span>
+      <h1>Flutter Da Vinci - Vector to CustomPainter</h1>
     </div>
   </div>
 
@@ -487,6 +554,18 @@
           <button class="tab-btn active" id="tabPainter" onclick="setTab('painter')">CustomPainter</button>
           <button class="tab-btn" id="tabWidget" onclick="setTab('widget')">Widget Component</button>
           <button class="tab-btn" id="tabPaths" onclick="setTab('paths')">Path Code Only</button>
+        </div>
+
+        <!-- Class Name Input -->
+        <div class="class-name-row" id="classNameRow">
+          <label class="input-label" for="inputClassName">Painter Class</label>
+          <div class="input-wrapper">
+            <input type="text" id="inputClassName" placeholder="e.g. MyPainter, GroupPainter" spellcheck="false"
+              autocomplete="off" oninput="onClassNameInput()" onblur="onClassNameBlur()"
+              onkeydown="if(event.key === 'Enter') { this.blur(); }" />
+            <button type="button" class="input-reset-btn" id="btnResetClassName" title="Reset to default class name"
+              onclick="resetClassName()">↺</button>
+          </div>
         </div>
 
         <div class="options-row">
@@ -556,6 +635,7 @@
         multiSel.style.display = 'flex';
       } else if (msg.type === 'selection-data') {
         const data = msg.data;
+        const previousData = currentData;
         currentData = data;
 
         if (data.flattenError || (!data.hasVectorPaths && (!data.vectorPaths || data.vectorPaths.length === 0))) {
@@ -565,6 +645,13 @@
           content.style.display = 'flex';
           populateElementInfo(data);
           renderPreview(data);
+
+          // Update class name input when selection changes or if empty
+          const input = document.getElementById('inputClassName');
+          if (input && (!previousData || previousData.name !== data.name || !input.value.trim())) {
+            input.value = getDefaultPainterClassName(data.name);
+          }
+
           updateGeneratedCode();
         }
       }
@@ -575,6 +662,12 @@
       document.getElementById('tabPainter').className = 'tab-btn' + (tab === 'painter' ? ' active' : '');
       document.getElementById('tabWidget').className = 'tab-btn' + (tab === 'widget' ? ' active' : '');
       document.getElementById('tabPaths').className = 'tab-btn' + (tab === 'paths' ? ' active' : '');
+
+      const classNameRow = document.getElementById('classNameRow');
+      if (classNameRow) {
+        classNameRow.style.display = tab === 'paths' ? 'none' : 'flex';
+      }
+
       updateGeneratedCode();
     }
 
@@ -839,17 +932,71 @@
       return commands;
     }
 
-    function sanitizeClassName(name) {
-      let sanitized = (name || '').replace(/[^a-zA-Z0-9]/g, '');
-      if (sanitized.length === 0) sanitized = 'CustomGraphic';
-      return sanitized.charAt(0).toUpperCase() + sanitized.slice(1);
+    function getDefaultPainterClassName(name) {
+      let base = (name || '').replace(/[^a-zA-Z0-9]/g, '');
+      if (base.length === 0) base = 'CustomGraphic';
+      base = base.charAt(0).toUpperCase() + base.slice(1);
+      if (base.endsWith('Painter')) {
+        return base;
+      }
+      return `${base}Painter`;
+    }
+
+    function sanitizeDartIdentifier(input, fallback = 'CustomGraphicPainter') {
+      if (!input) return fallback;
+      let cleaned = input.trim().replace(/[^a-zA-Z0-9_]/g, '');
+      if (!cleaned) return fallback;
+      if (/^[0-9]/.test(cleaned)) {
+        cleaned = 'Custom' + cleaned;
+      } else if (/^[a-z]/.test(cleaned)) {
+        cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+      }
+      return cleaned;
+    }
+
+    function getEffectivePainterClassName() {
+      const input = document.getElementById('inputClassName');
+      const val = input ? input.value.trim() : '';
+      if (!val) {
+        return currentData ? getDefaultPainterClassName(currentData.name) : 'CustomGraphicPainter';
+      }
+      return sanitizeDartIdentifier(val, currentData ? getDefaultPainterClassName(currentData.name) : 'CustomGraphicPainter');
+    }
+
+    function onClassNameInput() {
+      updateGeneratedCode();
+    }
+
+    function onClassNameBlur() {
+      const input = document.getElementById('inputClassName');
+      if (!input) return;
+      if (!input.value.trim()) {
+        input.value = currentData ? getDefaultPainterClassName(currentData.name) : 'CustomGraphicPainter';
+      } else {
+        input.value = sanitizeDartIdentifier(input.value.trim(), currentData ? getDefaultPainterClassName(currentData.name) : 'CustomGraphicPainter');
+      }
+      updateGeneratedCode();
+    }
+
+    function resetClassName() {
+      if (!currentData) return;
+      const input = document.getElementById('inputClassName');
+      if (input) {
+        input.value = getDefaultPainterClassName(currentData.name);
+      }
+      updateGeneratedCode();
     }
 
     function updateGeneratedCode() {
       if (!currentData || !currentData.vectorPaths) return;
 
       const data = currentData;
-      const className = sanitizeClassName(data.name);
+      const painterClassName = getEffectivePainterClassName();
+      const baseWidgetName = painterClassName.endsWith('Painter') && painterClassName.length > 7
+        ? painterClassName.slice(0, -7)
+        : painterClassName;
+      const widgetClassName = `${baseWidgetName}Widget`;
+
       const width = Math.max(1, Math.round(data.width));
       const height = Math.max(1, Math.round(data.height));
       const isDynamic = document.getElementById('optDynamicColor').checked;
@@ -886,14 +1033,14 @@
           code += `import 'package:flutter/material.dart';\n\n`;
         }
         code += `/// A responsive Flutter icon widget generated from Figma "${data.name}".\n`;
-        code += `class ${className}Widget extends StatelessWidget {\n`;
+        code += `class ${widgetClassName} extends StatelessWidget {\n`;
         code += `  final double? width;\n`;
         code += `  final double? height;\n`;
         code += `  final Color? color;\n`;
         if (hasStroke) {
           code += `  final Color? strokeColor;\n`;
         }
-        code += `\n  const ${className}Widget({\n`;
+        code += `\n  const ${widgetClassName}({\n`;
         code += `    super.key,\n`;
         code += `    this.width = ${width}.0,\n`;
         code += `    this.height = ${height}.0,\n`;
@@ -906,7 +1053,7 @@
         code += `  Widget build(BuildContext context) {\n`;
         code += `    return CustomPaint(\n`;
         code += `      size: Size(width ?? ${width}.0, height ?? ${height}.0),\n`;
-        code += `      painter: ${className}Painter(\n`;
+        code += `      painter: ${painterClassName}(\n`;
         if (isDynamic) {
           code += `        color: color,\n`;
           if (hasStroke) {
@@ -919,35 +1066,35 @@
         code += `}\n\n`;
 
         // Append Painter
-        code += generatePainterCode(className, width, height, isDynamic, isResponsive, data, defaultFill, hasStroke, defaultStroke, strokeWidth);
+        code += generatePainterCode(painterClassName, width, height, isDynamic, isResponsive, data, defaultFill, hasStroke, defaultStroke, strokeWidth);
       }
       else {
         // CustomPainter Mode (Default)
         if (includeImport) {
           code += `import 'package:flutter/material.dart';\n\n`;
         }
-        code += generatePainterCode(className, width, height, isDynamic, isResponsive, data, defaultFill, hasStroke, defaultStroke, strokeWidth);
+        code += generatePainterCode(painterClassName, width, height, isDynamic, isResponsive, data, defaultFill, hasStroke, defaultStroke, strokeWidth);
       }
 
       currentRawCode = code;
       displayCode(code);
     }
 
-    function generatePainterCode(className, width, height, isDynamic, isResponsive, data, defaultFill, hasStroke, defaultStroke, strokeWidth) {
-      let code = `class ${className}Painter extends CustomPainter {\n`;
+    function generatePainterCode(painterClassName, width, height, isDynamic, isResponsive, data, defaultFill, hasStroke, defaultStroke, strokeWidth) {
+      let code = `class ${painterClassName} extends CustomPainter {\n`;
       if (isDynamic) {
         code += `  final Color? color;\n`;
         if (hasStroke) {
           code += `  final Color? strokeColor;\n`;
         }
-        code += `\n  const ${className}Painter({\n`;
+        code += `\n  const ${painterClassName}({\n`;
         code += `    this.color,\n`;
         if (hasStroke) {
           code += `    this.strokeColor,\n`;
         }
         code += `  });\n\n`;
       } else {
-        code += `  const ${className}Painter();\n\n`;
+        code += `  const ${painterClassName}();\n\n`;
       }
 
       code += `  @override\n`;
@@ -1023,7 +1170,7 @@
 
       code += `  }\n\n`;
       code += `  @override\n`;
-      code += `  bool shouldRepaint(covariant ${className}Painter oldDelegate) =>\n`;
+      code += `  bool shouldRepaint(covariant ${painterClassName} oldDelegate) =>\n`;
       if (isDynamic) {
         if (hasStroke) {
           code += `      oldDelegate.color != color || oldDelegate.strokeColor != strokeColor;\n`;

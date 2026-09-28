@@ -1,4 +1,6 @@
-# 🎨Flutter Da Vinci Art to Code
+![Flutter Da Vinci](assets/cover_banner.jpg)
+
+# 🎨 Flutter Da Vinci Art to Code
 
 > Transform your Figma designs into beautiful, responsive Flutter code with a single click!
 
@@ -8,7 +10,11 @@
 
 ## ✨ What is Flutter Da Vinci?
 
-Da Vinci is a powerful Figma plugin that converts your vector designs into production-ready Flutter `CustomPainter` code. Whether you're designing icons, illustrations, or custom UI elements, Da Vinci makes it effortless to bring your designs to life in Flutter.
+Flutter Da Vinci is a powerful Figma plugin that converts your vector designs into production-ready Flutter `CustomPainter` code. Whether you're designing icons, illustrations, or custom UI elements, Da Vinci makes it effortless to bring your designs to life in Flutter.
+
+<p align="center">
+  <img src="assets/ezgif-785dc4bd3fc7b311.gif" alt="Flutter Da Vinci Demo" width="100%" />
+</p>
 
 ## 🚀 Features
 
@@ -32,10 +38,23 @@ Da Vinci is a powerful Figma plugin that converts your vector designs into produ
 
 ### 💻 Developer Friendly
 
+- **Custom Class Naming** - Directly specify the `CustomPainter` class name in the UI with instant code preview
 - **Clean Code Generation** - Produces readable, well-structured Flutter code
 - **Copy to Clipboard** - One-click copy for instant use
 - **Usage Examples** - Includes code snippets showing how to use the generated painter
 - **Syntax Highlighting** - Beautiful code preview in dark theme
+
+## 📸 Screenshots
+
+| Initial State | CustomPainter Mode |
+| :---: | :---: |
+| <img src="assets/Screenshot 2026-09-28 at 12.52.30 PM.png" alt="Initial State - No Vector Selected" width="100%" /> | <img src="assets/Screenshot 2026-09-28 at 12.52.40 PM.png" alt="CustomPainter Mode" width="100%" /> |
+| **Ready & Waiting**<br>Prompt to select any vector or frame | **CustomPainter Generation**<br>Live vector preview & custom class name |
+
+| Widget Component Mode | Path Code Only Mode |
+| :---: | :---: |
+| <img src="assets/Screenshot 2026-09-28 at 12.52.48 PM.png" alt="Widget Component Mode" width="100%" /> | <img src="assets/Screenshot 2026-09-28 at 12.52.53 PM.png" alt="Path Code Only Mode" width="100%" /> |
+| **Widget Component Mode**<br>Generates drop-in `StatelessWidget` | **Path Code Only**<br>Direct Flutter `Path` drawing commands |
 
 ## 📦 Installation
 
@@ -230,6 +249,6 @@ Check our website: [Novaturients](https://novaturients.in)
 
 ---
 
-**Made with Flutter** 💙 | **Powered by Figma** 🎨
+**Made for Flutter** 💙 | **Powered by Figma** 🎨
 
 _Transform design into code, beautifully._

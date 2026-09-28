@@ -12,9 +12,7 @@
 
 Flutter Da Vinci is a powerful Figma plugin that converts your vector designs into production-ready Flutter `CustomPainter` code. Whether you're designing icons, illustrations, or custom UI elements, Da Vinci makes it effortless to bring your designs to life in Flutter.
 
-<p align="center">
-  <img src="assets/ezgif-785dc4bd3fc7b311.gif" alt="Flutter Da Vinci Demo" width="100%" />
-</p>
+![Flutter Da Vinci Demo](./assets/demo.gif)
 
 ## 🚀 Features
 
@@ -48,12 +46,12 @@ Flutter Da Vinci is a powerful Figma plugin that converts your vector designs in
 
 | Initial State | CustomPainter Mode |
 | :---: | :---: |
-| <img src="assets/Screenshot 2026-09-28 at 12.52.30 PM.png" alt="Initial State - No Vector Selected" width="100%" /> | <img src="assets/Screenshot 2026-09-28 at 12.52.40 PM.png" alt="CustomPainter Mode" width="100%" /> |
+| ![Initial State](./assets/screenshot-empty-state.png) | ![CustomPainter Mode](./assets/screenshot-custom-painter.png) |
 | **Ready & Waiting**<br>Prompt to select any vector or frame | **CustomPainter Generation**<br>Live vector preview & custom class name |
 
 | Widget Component Mode | Path Code Only Mode |
 | :---: | :---: |
-| <img src="assets/Screenshot 2026-09-28 at 12.52.48 PM.png" alt="Widget Component Mode" width="100%" /> | <img src="assets/Screenshot 2026-09-28 at 12.52.53 PM.png" alt="Path Code Only Mode" width="100%" /> |
+| ![Widget Component Mode](./assets/screenshot-widget-component.png) | ![Path Code Only Mode](./assets/screenshot-path-code.png) |
 | **Widget Component Mode**<br>Generates drop-in `StatelessWidget` | **Path Code Only**<br>Direct Flutter `Path` drawing commands |
 
 ## 📦 Installation
